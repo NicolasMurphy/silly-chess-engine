@@ -4,13 +4,14 @@ import chess.engine
 import chess.pgn
 import random
 import uuid
+import os
+import shutil
 
 
 class SillyChessEngine:
     def __init__(
         self,
-        # stockfish_path="./stockfish-windows/stockfish-windows-x86-64-avx2.exe",
-        stockfish_path="./stockfish-linux/stockfish-ubuntu-x86-64-avx2",
+        stockfish_path="/usr/games/stockfish",  # Debian installs to /usr/games/
         player_color=chess.WHITE,
     ):
         self.board = chess.Board()
@@ -21,10 +22,17 @@ class SillyChessEngine:
         self.player_color = player_color
         self.engine_color = chess.BLACK if player_color == chess.WHITE else chess.WHITE
 
+        # Check if stockfish is available
+        stockfish_location = shutil.which(stockfish_path)
+        print(f"Looking for Stockfish at: {stockfish_path}")
+        print(f"Found Stockfish at: {stockfish_location}")
+
         try:
             self.engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
-        except Exception:
-            pass
+            print("✅ Stockfish loaded successfully!")
+        except Exception as e:
+            print(f"❌ Stockfish failed: {e}")
+            self.engine = None
 
     def get_stockfish_move(self):
         if not self.engine:
@@ -46,15 +54,16 @@ class SillyChessEngine:
         if random.random() < 0.8:
             move = self.get_stockfish_move()
             move_type = "SMART"
-            print("SMART")
+            print("SMART move attempted")
         else:
             move = self.get_random_move()
             move_type = "SILLY"
-            print("SILLY")
+            print("SILLY move chosen")
+
         if move is None:
             move = self.get_random_move()
             move_type = "RANDOM (fallback)"
-            print("RANDOM")
+            print("FALLBACK: Stockfish failed, using random move")
 
         return move, move_type
 
@@ -101,7 +110,12 @@ class SillyChessEngine:
 
 
 app = Flask(__name__)
-app.secret_key = "your-secret-key-change-this"
+
+# Use environment variable or secure fallback
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "sk_prod_8f2e9d1c6b4a3f7e5d8c2a9b1f6e4d7c3a5b8e1f9d2c6a4b7e3f8d1c5a9b2e6f",
+)
 
 games = {}
 
@@ -129,6 +143,10 @@ def new_game():
 
     session["game_id"] = game_id
 
+    print(f"Created new game: {game_id}")
+    print(f"Session game_id: {session.get('game_id')}")
+    print(f"Total games: {len(games)}")
+
     engine_move_info = None
     if engine.board.turn == engine.engine_color:
         move, move_san, move_type = engine.make_engine_move()
@@ -153,6 +171,10 @@ def new_game():
 @app.route("/make_move", methods=["POST"])
 def make_move():
     game_id = session.get("game_id")
+
+    print(f"Move request - Session game_id: {game_id}")
+    print(f"Available games: {list(games.keys())}")
+
     if not game_id or game_id not in games:
         return jsonify({"error": "No active game"}), 400
 
@@ -192,4 +214,5 @@ def make_move():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # For local development
+    app.run(host="0.0.0.0", debug=True, port=5000)

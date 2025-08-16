@@ -1,0 +1,10 @@
+node_modules
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+__pycache__
+*.pyc
+.env
+.DS_Store

@@ -1,0 +1,9 @@
+services:
+  silly-chess-app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=dev-secret-key-change-for-production
+    restart: unless-stopped

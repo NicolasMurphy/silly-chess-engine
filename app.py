@@ -9,7 +9,8 @@ import uuid
 class SillyChessEngine:
     def __init__(
         self,
-        stockfish_path="./stockfish/stockfish-windows-x86-64-avx2.exe",
+        # stockfish_path="./stockfish-windows/stockfish-windows-x86-64-avx2.exe",
+        stockfish_path="./stockfish-linux/stockfish-ubuntu-x86-64-avx2",
         player_color=chess.WHITE,
     ):
         self.board = chess.Board()

@@ -45,13 +45,15 @@ class SillyChessEngine:
         if random.random() < 0.8:
             move = self.get_stockfish_move()
             move_type = "SMART"
+            print("SMART")
         else:
             move = self.get_random_move()
             move_type = "SILLY"
-
+            print("SILLY")
         if move is None:
             move = self.get_random_move()
             move_type = "RANDOM (fallback)"
+            print("RANDOM")
 
         return move, move_type
 

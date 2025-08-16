@@ -39,7 +39,7 @@ class SillyChessEngine:
         return random.choice(legal_moves) if legal_moves else None
 
     def get_engine_move(self):
-        if random.random() < 0.8:
+        if random.random() < 0.9:
             move = self.get_stockfish_move()
             move_type = "SMART"
         else:

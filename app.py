@@ -42,7 +42,7 @@ class SillyChessEngine:
         return None
 
     def get_engine_move(self):
-        if random.random() < 0.5:
+        if random.random() < 0.8:
             move = self.get_stockfish_move()
             move_type = "SMART"
         else:

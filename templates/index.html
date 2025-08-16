@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Silly Chess Engine</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="controls">
+      <div class="color-selector">
+        <h3>Choose your color:</h3>
+        <label
+          ><input type="radio" name="color" value="white" checked /> White (play
+          first)</label
+        >
+        <label
+          ><input type="radio" name="color" value="black" /> Black (engine plays
+          first)</label
+        >
+        <label><input type="radio" name="color" value="random" /> Random</label>
+      </div>
+      <button onclick="startNewGame()">Start New Game</button>
+    </div>
+
+    <div class="container">
+      <div class="board-container">
+        <div id="chessboard" style="width: 400px"></div>
+      </div>
+
+      <div class="info-panel">
+        <h3>Moves</h3>
+        <div id="move-history"></div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

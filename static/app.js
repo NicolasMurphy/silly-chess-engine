@@ -5,16 +5,78 @@ let game = new Chess();
 let playerColor = "white";
 let gameActive = false;
 
+function addPlayerMove(moveText) {
+  const historyDiv = document.getElementById("move-history");
+
+  if (playerColor === "white") {
+    const moveNumber = historyDiv.children.length + 1;
+    const moveDiv = document.createElement("div");
+    moveDiv.className = "move-info";
+    moveDiv.textContent = `${moveNumber}. ${moveText}`;
+    historyDiv.appendChild(moveDiv);
+  } else {
+    const lastMove = historyDiv.querySelector('.move-info:last-child');
+    if (lastMove && lastMove.textContent.split(' ').length === 2) {
+      lastMove.textContent += ` ${moveText}`;
+    } else {
+      const moveNumber = historyDiv.children.length + 1;
+      const moveDiv = document.createElement("div");
+      moveDiv.className = "move-info";
+      moveDiv.textContent = `${moveNumber}. ... ${moveText}`;
+      historyDiv.appendChild(moveDiv);
+    }
+  }
+
+  historyDiv.scrollTop = historyDiv.scrollHeight;
+}
+
+function addEngineMove(moveText) {
+  const historyDiv = document.getElementById("move-history");
+
+  if (playerColor === "black") {
+    const moveNumber = historyDiv.children.length + 1;
+    const moveDiv = document.createElement("div");
+    moveDiv.className = "move-info";
+    moveDiv.textContent = `${moveNumber}. ${moveText}`;
+    historyDiv.appendChild(moveDiv);
+  } else {
+    const lastMove = historyDiv.querySelector('.move-info:last-child');
+    if (lastMove && lastMove.textContent.split(' ').length === 2) {
+      lastMove.textContent += ` ${moveText}`;
+    } else {
+      const moveNumber = historyDiv.children.length + 1;
+      const moveDiv = document.createElement("div");
+      moveDiv.className = "move-info";
+      moveDiv.textContent = `${moveNumber}. ... ${moveText}`;
+      historyDiv.appendChild(moveDiv);
+    }
+  }
+
+  historyDiv.scrollTop = historyDiv.scrollHeight;
+}
+
+function clearMoveHistory() {
+  document.getElementById("move-history").innerHTML = "";
+}
+
+function handleGameOver(result) {
+  gameActive = false;
+  updateBoard();
+
+  const moveDiv = document.createElement("div");
+  moveDiv.className = "move-info game-over";
+  moveDiv.textContent = `Game Over! ${result}`;
+  document.getElementById("move-history").appendChild(moveDiv);
+  const historyDiv = document.getElementById("move-history");
+  historyDiv.scrollTop = historyDiv.scrollHeight;
+}
+
 function startNewGame() {
-  const selectedColor = document.querySelector(
-    'input[name="color"]:checked'
-  ).value;
+  const selectedColor = document.querySelector('input[name="color"]:checked').value;
 
   fetch("/new_game", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ color: selectedColor }),
   })
     .then((response) => response.json())
@@ -29,11 +91,10 @@ function startNewGame() {
       gameActive = !data.game_over;
 
       updateBoard();
-
       clearMoveHistory();
 
       if (data.engine_move) {
-        addMoveToHistory(`Engine: ${data.engine_move.move}`);
+        addEngineMove(data.engine_move.move);
       }
 
       if (data.game_over) {
@@ -55,23 +116,11 @@ function updateBoard() {
       color: gameActive ? playerColor : undefined,
       free: false,
       dests: gameActive ? getValidMoves() : new Map(),
-      events: {
-        after: onMove,
-      },
+      events: { after: onMove },
     },
-    premovable: {
-      enabled: false,
-    },
-    draggable: {
-      enabled: gameActive,
-      showGhost: true,
-    },
-    selectable: {
-      enabled: true,
-    },
-    events: {
-      select: onSquareSelect,
-    },
+    premovable: { enabled: false },
+    draggable: { enabled: gameActive, showGhost: true },
+    selectable: { enabled: true },
   };
 
   if (board) {
@@ -96,25 +145,16 @@ function getValidMoves() {
 }
 
 function onMove(orig, dest) {
-  console.log("Move attempted:", orig, "to", dest);
-
-  const move = game.move({
-    from: orig,
-    to: dest,
-    promotion: "q",
-  });
+  const move = game.move({ from: orig, to: dest, promotion: "q" });
 
   if (move === null) {
-    console.log("Invalid move, reverting");
     updateBoard();
     return;
   }
 
   fetch("/make_move", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ move: move.san }),
   })
     .then((response) => response.json())
@@ -129,17 +169,15 @@ function onMove(orig, dest) {
       game.load(data.fen);
       updateBoard();
 
-      addMoveToHistory(`You: ${move.san}`);
+      addPlayerMove(move.san);
 
       if (data.engine_move) {
-        addMoveToHistory(`Engine: ${data.engine_move.move}`);
+        addEngineMove(data.engine_move.move);
 
         setTimeout(() => {
           const engineMove = data.engine_move;
           if (engineMove.from && engineMove.to) {
-            board.set({
-              lastMove: [engineMove.from, engineMove.to],
-            });
+            board.set({ lastMove: [engineMove.from, engineMove.to] });
           }
         }, 100);
       }
@@ -155,37 +193,4 @@ function onMove(orig, dest) {
     });
 }
 
-function onSquareSelect(key) {
-  console.log("Square selected:", key);
-}
-
-function addMoveToHistory(moveText) {
-  const historyDiv = document.getElementById("move-history");
-  const moveDiv = document.createElement("div");
-  moveDiv.className = "move-info";
-  moveDiv.textContent = moveText;
-  historyDiv.appendChild(moveDiv);
-  historyDiv.scrollTop = historyDiv.scrollHeight;
-}
-
-function clearMoveHistory() {
-  document.getElementById("move-history").innerHTML = "";
-}
-
-function handleGameOver(result) {
-  gameActive = false;
-  updateBoard();
-
-  const moveDiv = document.createElement("div");
-  moveDiv.className = "move-info game-over";
-  moveDiv.textContent = `Game Over! ${result}`;
-  document.getElementById("move-history").appendChild(moveDiv);
-  const historyDiv = document.getElementById("move-history");
-  historyDiv.scrollTop = historyDiv.scrollHeight;
-}
-
 window.startNewGame = startNewGame;
-
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("Page loaded, ready to start game");
-});

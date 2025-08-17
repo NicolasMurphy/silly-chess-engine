@@ -11,21 +11,18 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <div class="controls">
-      <div class="color-selector">
-        <label
-          ><input type="radio" name="color" value="white" checked />
-          White</label
-        >
-        <label><input type="radio" name="color" value="black" /> Black</label>
-        <label><input type="radio" name="color" value="random" /> Random</label>
-      </div>
-      <button onclick="startNewGame()">Start New Game</button>
-    </div>
-
     <div class="container">
+      <div class="controls">
+        <div class="color-selector">
+          <label><input type="radio" name="color" value="white" checked /> White</label>
+          <label><input type="radio" name="color" value="black" /> Black</label>
+          <label><input type="radio" name="color" value="random" /> Random</label>
+        </div>
+        <button onclick="startNewGame()">Start New Game</button>
+      </div>
+
       <div class="board-container">
-        <div id="chessboard" style="width: 400px; height: 400px"></div>
+        <div id="chessboard"></div>
       </div>
 
       <div class="info-panel">
@@ -35,7 +32,6 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-
     <script type="module" src="/static/app.js"></script>
   </body>
 </html>

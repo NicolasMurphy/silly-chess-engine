@@ -38,8 +38,40 @@ class SillyChessEngine:
         legal_moves = list(self.board.legal_moves)
         return random.choice(legal_moves) if legal_moves else None
 
+    def get_illegal_move(self):
+        # Get all pieces of engine's color
+        engine_pieces = []
+        for square in chess.SQUARES:
+            piece = self.board.piece_at(square)
+            if piece and piece.color == self.engine_color:
+                engine_pieces.append(square)
+
+        if not engine_pieces:
+            return None
+
+        # Pick random piece
+        from_square = random.choice(engine_pieces)
+
+        # Pick random destination (any square)
+        to_square = random.choice(list(chess.SQUARES))
+
+        # Make sure it's actually illegal
+        if chess.Move(from_square, to_square) in self.board.legal_moves:
+            # Try a few more times to get an illegal move
+            for _ in range(10):
+                to_square = random.choice(list(chess.SQUARES))
+                if chess.Move(from_square, to_square) not in self.board.legal_moves:
+                    break
+
+        return from_square, to_square
+
     def get_engine_move(self):
-        if random.random() < 0.9:
+        if random.random() < 0.2:
+            illegal_move = self.get_illegal_move()
+            if illegal_move:
+                return illegal_move, "ILLEGAL"
+
+        if random.random() < 0.8:
             move = self.get_stockfish_move()
             move_type = "SMART"
         else:
@@ -54,12 +86,42 @@ class SillyChessEngine:
 
     def make_engine_move(self):
         if self.board.turn == self.engine_color:
-            move, move_type = self.get_engine_move()
-            if move:
-                move_san = self.board.san(move)
-                self.board.push(move)
-                self.node = self.node.add_variation(move)
-                return move, move_san, move_type
+            move_result, move_type = self.get_engine_move()
+
+            if move_type == "ILLEGAL" and isinstance(move_result, tuple):
+                from_square, to_square = move_result
+                # Get the piece before moving it
+                piece = self.board.piece_at(from_square)
+                if piece:
+                    # Manually modify board state
+                    self.board.set_piece_at(
+                        from_square, None
+                    )  # Remove from original square
+                    self.board.set_piece_at(to_square, piece)  # Place on new square
+
+                    # Switch turn manually since we bypassed normal move logic
+                    self.board.turn = not self.board.turn
+
+                    # Create move notation
+                    move_san = f"{chess.square_name(from_square)}-{chess.square_name(to_square)}"
+
+                    # Create fake move object for return info
+                    class FakeMove:
+                        def __init__(self, from_sq, to_sq):
+                            self.from_square = from_sq
+                            self.to_square = to_sq
+
+                    fake_move = FakeMove(from_square, to_square)
+                    return fake_move, move_san, move_type
+            else:
+                # Normal legal move
+                move = move_result
+                if move:
+                    move_san = self.board.san(move)
+                    self.board.push(move)
+                    self.node = self.node.add_variation(move)
+                    return move, move_san, move_type
+
         return None, None, None
 
     def make_player_move(self, move_str):

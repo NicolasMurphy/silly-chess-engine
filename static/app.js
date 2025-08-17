@@ -15,15 +15,9 @@ function addPlayerMove(moveText) {
     moveDiv.textContent = `${moveNumber}. ${moveText}`;
     historyDiv.appendChild(moveDiv);
   } else {
-    const lastMove = historyDiv.querySelector('.move-info:last-child');
-    if (lastMove && lastMove.textContent.split(' ').length === 2) {
+    const lastMove = historyDiv.querySelector(".move-info:last-child");
+    if (lastMove) {
       lastMove.textContent += ` ${moveText}`;
-    } else {
-      const moveNumber = historyDiv.children.length + 1;
-      const moveDiv = document.createElement("div");
-      moveDiv.className = "move-info";
-      moveDiv.textContent = `${moveNumber}. ... ${moveText}`;
-      historyDiv.appendChild(moveDiv);
     }
   }
 
@@ -40,15 +34,9 @@ function addEngineMove(moveText) {
     moveDiv.textContent = `${moveNumber}. ${moveText}`;
     historyDiv.appendChild(moveDiv);
   } else {
-    const lastMove = historyDiv.querySelector('.move-info:last-child');
-    if (lastMove && lastMove.textContent.split(' ').length === 2) {
+    const lastMove = historyDiv.querySelector(".move-info:last-child");
+    if (lastMove) {
       lastMove.textContent += ` ${moveText}`;
-    } else {
-      const moveNumber = historyDiv.children.length + 1;
-      const moveDiv = document.createElement("div");
-      moveDiv.className = "move-info";
-      moveDiv.textContent = `${moveNumber}. ... ${moveText}`;
-      historyDiv.appendChild(moveDiv);
     }
   }
 
@@ -72,7 +60,9 @@ function handleGameOver(result) {
 }
 
 function startNewGame() {
-  const selectedColor = document.querySelector('input[name="color"]:checked').value;
+  const selectedColor = document.querySelector(
+    'input[name="color"]:checked'
+  ).value;
 
   fetch("/new_game", {
     method: "POST",
@@ -152,6 +142,8 @@ function onMove(orig, dest) {
     return;
   }
 
+  addPlayerMove(move.san);
+
   fetch("/make_move", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -168,8 +160,6 @@ function onMove(orig, dest) {
 
       game.load(data.fen);
       updateBoard();
-
-      addPlayerMove(move.san);
 
       if (data.engine_move) {
         addEngineMove(data.engine_move.move);

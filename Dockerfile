@@ -16,7 +16,7 @@ RUN mkdir -p static
 EXPOSE 5000
 
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+ENV FLASK_ENV=development
 ENV PYTHONUNBUFFERED=1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--debug"]

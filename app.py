@@ -29,7 +29,7 @@ class SillyChessEngine:
         if not self.engine:
             return None
         try:
-            result = self.engine.play(self.board, chess.engine.Limit(depth=15))
+            result = self.engine.play(self.board, chess.engine.Limit(depth=20))
             return result.move
         except Exception:
             return None

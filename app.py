@@ -93,17 +93,63 @@ class SillyChessEngine:
                 # Get the piece before moving it
                 piece = self.board.piece_at(from_square)
                 if piece:
+                    # Store original rank for forward move check
+                    from_rank = chess.square_rank(from_square)
+                    to_rank = chess.square_rank(to_square)
+
                     # Manually modify board state
                     self.board.set_piece_at(
                         from_square, None
                     )  # Remove from original square
                     self.board.set_piece_at(to_square, piece)  # Place on new square
 
+                    # Check for pawn promotion on illegal moves
+                    if piece.piece_type == chess.PAWN and (
+                        (
+                            piece.color == chess.WHITE
+                            and to_rank == 7
+                            and to_rank > from_rank
+                        )
+                        or (
+                            piece.color == chess.BLACK
+                            and to_rank == 0
+                            and to_rank < from_rank
+                        )
+                    ):
+
+                        # Randomly select promotion piece
+                        promotion_pieces = [
+                            chess.QUEEN,
+                            chess.ROOK,
+                            chess.BISHOP,
+                            chess.KNIGHT,
+                        ]
+                        promoted_piece_type = random.choice(promotion_pieces)
+                        promoted_piece = chess.Piece(promoted_piece_type, piece.color)
+                        self.board.set_piece_at(to_square, promoted_piece)
+
                     # Switch turn manually since we bypassed normal move logic
                     self.board.turn = not self.board.turn
 
-                    # Create move notation
-                    move_san = f"{chess.square_name(from_square)}-{chess.square_name(to_square)}"
+                    # Create move notation (updated to show promotion if it happened)
+                    if piece.piece_type == chess.PAWN and (
+                        (piece.color == chess.WHITE and to_rank == 7)
+                        or (piece.color == chess.BLACK and to_rank == 0)
+                    ):
+                        # Get the promoted piece for notation
+                        final_piece = self.board.piece_at(to_square)
+                        piece_symbols = {
+                            chess.QUEEN: "Q",
+                            chess.ROOK: "R",
+                            chess.BISHOP: "B",
+                            chess.KNIGHT: "N",
+                        }
+                        promotion_symbol = piece_symbols.get(
+                            final_piece.piece_type, "Q"
+                        )
+                        move_san = f"{chess.square_name(from_square)}-{chess.square_name(to_square)}={promotion_symbol}"
+                    else:
+                        move_san = f"{chess.square_name(from_square)}-{chess.square_name(to_square)}"
 
                     # Create fake move object for return info
                     class FakeMove:

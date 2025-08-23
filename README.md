@@ -1,0 +1,1 @@
+This app uses Stockfish, python-chess, and Chessground; built with Flask and Vanilla JavaScript. The engine plays Stockfish moves most of the time, and occasionally makes random legal or illegal moves.

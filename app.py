@@ -49,29 +49,99 @@ class SillyChessEngine:
         if not engine_pieces:
             return None
 
-        # Pick random piece
-        from_square = random.choice(engine_pieces)
+        # Try multiple times to get a "good" illegal move
+        for attempt in range(20):
+            # Pick random piece
+            from_square = random.choice(engine_pieces)
 
-        # Pick random destination (any square)
-        to_square = random.choice(list(chess.SQUARES))
+            # Pick random destination
+            to_square = random.choice(list(chess.SQUARES))
 
-        # Make sure it's actually illegal
-        if chess.Move(from_square, to_square) in self.board.legal_moves:
-            # Try a few more times to get an illegal move
-            for _ in range(10):
-                to_square = random.choice(list(chess.SQUARES))
-                if chess.Move(from_square, to_square) not in self.board.legal_moves:
-                    break
+            # Filter 1: Don't move to same square (no-op move)
+            if from_square == to_square:
+                continue
 
-        return from_square, to_square
+            # Filter 2: Don't capture own pieces
+            target_piece = self.board.piece_at(to_square)
+            if target_piece and target_piece.color == self.engine_color:
+                continue
+
+            # Filter 3: Don't capture the opponent's king (would break the game)
+            if target_piece and target_piece.piece_type == chess.KING:
+                continue
+
+            # Filter 4: Don't move into check (simulate the move first)
+            if self._would_move_into_check(from_square, to_square):
+                continue
+
+            # Filter 5: If currently in check, the move should address it somehow
+            if self.board.is_check() and not self._addresses_check(
+                from_square, to_square
+            ):
+                continue
+
+            # Make sure it's actually illegal (not just accidentally legal)
+            if chess.Move(from_square, to_square) in self.board.legal_moves:
+                continue
+
+            return from_square, to_square
+
+        # If we couldn't find a good illegal move, return None
+        return None
+
+    def _would_move_into_check(self, from_square, to_square):
+        """Check if this move would put the engine's king in check"""
+        # Create a temporary board to test the move
+        temp_board = self.board.copy()
+        piece = temp_board.piece_at(from_square)
+
+        if not piece:
+            return False
+
+        # Manually make the move on temp board
+        temp_board.set_piece_at(from_square, None)
+        temp_board.set_piece_at(to_square, piece)
+
+        # Find the engine's king using built-in method
+        king_square = temp_board.king(self.engine_color)
+
+        if king_square is None:
+            return False
+
+        # Check if king would be attacked by opponent
+        opponent_color = not self.engine_color
+        return temp_board.is_attacked_by(opponent_color, king_square)
+
+    def _addresses_check(self, from_square, to_square):
+        """Check if this move would address the current check situation"""
+        if not self.board.is_check():
+            return True
+
+        # Create temp board and make the move
+        temp_board = self.board.copy()
+        piece = temp_board.piece_at(from_square)
+
+        if not piece:
+            return False
+
+        temp_board.set_piece_at(from_square, None)
+        temp_board.set_piece_at(to_square, piece)
+
+        # Find our king and check if it's still under attack
+        king_square = temp_board.king(self.engine_color)
+        if king_square is None:
+            return False
+
+        opponent_color = not self.engine_color
+        return not temp_board.is_attacked_by(opponent_color, king_square)
 
     def get_engine_move(self):
-        if random.random() < 0.2:
+        if random.random() < 0.99:
             illegal_move = self.get_illegal_move()
             if illegal_move:
                 return illegal_move, "ILLEGAL"
 
-        if random.random() < 0.8:
+        if random.random() < 0.2:
             move = self.get_stockfish_move()
             move_type = "SMART"
         else:

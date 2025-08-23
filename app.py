@@ -136,12 +136,12 @@ class SillyChessEngine:
         return not temp_board.is_attacked_by(opponent_color, king_square)
 
     def get_engine_move(self):
-        if random.random() < 0.99:
+        if random.random() < 0.2:
             illegal_move = self.get_illegal_move()
             if illegal_move:
                 return illegal_move, "ILLEGAL"
 
-        if random.random() < 0.2:
+        if random.random() < 0.99:
             move = self.get_stockfish_move()
             move_type = "SMART"
         else:

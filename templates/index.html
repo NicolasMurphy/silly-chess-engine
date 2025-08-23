@@ -14,9 +14,14 @@
     <div class="container">
       <div class="controls">
         <div class="color-selector">
-          <label><input type="radio" name="color" value="white" checked /> White</label>
+          <label
+            ><input type="radio" name="color" value="white" checked />
+            White</label
+          >
           <label><input type="radio" name="color" value="black" /> Black</label>
-          <label><input type="radio" name="color" value="random" /> Random</label>
+          <label
+            ><input type="radio" name="color" value="random" /> Random</label
+          >
         </div>
         <button onclick="startNewGame()">Start New Game</button>
       </div>
@@ -28,6 +33,31 @@
       <div class="info-panel">
         <h3>Moves</h3>
         <div id="move-history"></div>
+      </div>
+    </div>
+
+    <!-- Promotion Modal -->
+    <div id="promotion-modal" class="promotion-modal">
+      <div class="promotion-content">
+        <h3>Choose promotion piece:</h3>
+        <div class="promotion-pieces">
+          <div class="promotion-piece" data-piece="q">
+            <div class="promotion-piece-icon">♕</div>
+            <span>Queen</span>
+          </div>
+          <div class="promotion-piece" data-piece="r">
+            <div class="promotion-piece-icon">♖</div>
+            <span>Rook</span>
+          </div>
+          <div class="promotion-piece" data-piece="b">
+            <div class="promotion-piece-icon">♗</div>
+            <span>Bishop</span>
+          </div>
+          <div class="promotion-piece" data-piece="n">
+            <div class="promotion-piece-icon">♘</div>
+            <span>Knight</span>
+          </div>
+        </div>
       </div>
     </div>
 
